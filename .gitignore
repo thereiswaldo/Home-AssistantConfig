@@ -6,3 +6,11 @@ secrets.yaml
 known_devices.yaml
 entity_registry.yaml
 zones.yaml
+._configuration.yaml
+._customize.yaml
+._entity_registry.yaml
+._groups.yaml
+._known_devices.yaml
+._secrets.yaml
+._sensor.yaml
+._zones.yaml
