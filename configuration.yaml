@@ -1,0 +1,216 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret latitude
+  longitude: !secret longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 195
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: !secret time_zone
+  # Customization file
+  customize: !include customize.yaml
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+http:
+  # Secrets are defined in the file secrets.yaml
+  # api_password: !secret http_password
+  api_password: !secret http_password
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+  base_url: !secret base_url
+  ssl_certificate: !secret ssl_certificate
+  ssl_key: !secret ssl_key
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+# Weather prediction
+# sensor:
+#   - platform: yr
+
+# Text to speech
+tts:
+  - platform: google
+
+# Cloud
+cloud:
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+zwave:
+  usb_path: /dev/ttyACM0
+  network_key: !secret network_key
+
+ios:
+  push:
+    categories:
+      - name: Unlock
+        identifier: 'unlock'
+        actions:
+          - identifier: 'UNLOCK_FRONT'
+            title: 'Unlock Front'
+            activationMode: 'background'
+            authenticationRequired: no
+            destructive: yes
+            behavior: 'default'
+
+ifttt:
+  key: !secret ifttt_key
+
+ecobee:
+  api_key: !secret ecobee_api_key
+
+zone: !include zones.yaml
+
+device_tracker:
+  # - platform: owntracks
+  #   max_gps_accuracy: 200
+  #   waypoints: true
+  - platform: netgear
+    host: 192.168.1.1
+    username: !secret device_tracker_username
+    password: !secret device_tracker_password
+    interval_seconds: 10
+    consider_home: 180
+    track_new_devices: yes
+  - platform: owntracks_http
+    max_gps_accuracy: 200
+    waypoint_whitelist:
+      - jeremymqtt
+
+camera:
+  - name: Jeremy_Position
+    platform: generic
+    still_image_url: http://maps.googleapis.com/maps/api/staticmap?center={{ states.device_tracker.jeremys_iphone_ios.attributes.latitude }},{{ states.device_tracker.jeremys_iphone_ios.attributes.longitude }}&zoom=13&size=500x500&maptype=roadmap&markers=color:blue%7Clabel:P%7C{{ states.device_tracker.jeremys_iphone_ios.attributes.latitude }},{{ states.device_tracker.jeremys_iphone_ios.attributes.longitude }}
+    limit_refetch_to_url_change: true
+  - name: Lisa_Position
+    platform: generic
+    still_image_url: http://maps.googleapis.com/maps/api/staticmap?center={{ states.device_tracker.iphone_lisa.attributes.latitude }},{{ states.device_tracker.iphone_lisa.attributes.longitude }}&zoom=13&size=500x500&maptype=roadmap&markers=color:blue%7Clabel:P%7C{{ states.device_tracker.iphone_lisa.attributes.latitude }},{{ states.device_tracker.iphone_lisa.attributes.longitude }}
+    limit_refetch_to_url_change: true
+
+# Sensors, currently mostly weather
+sensor: !include sensor.yaml
+
+notify:
+  - platform: ios
+  - name: ios_family
+    platform: group
+    services:
+      - service: ios_jeremys_iphone_ios
+      - service: ios_iphone_lisa
+input_boolean:
+  notify_bun:
+    name: Notify when bun is spotted
+    initial: off
+    icon: mdi:cat
+  holiday_monday:
+    name: Monday was a holiday
+    initial: off
+  eco_away:
+    name: Turn thermostat to away
+    initial: off
+  lightshow:
+    name: Christmas Lightshow
+    initial: off
+  running:
+    name: Gone Running
+    initial: off
+  # notify_unlock:
+  #   name: Notify unlock door
+  #   initial: off
+  #   icon: mdi:glassdoor
+binary_sensor:
+  - platform: workday
+    country: CA
+    province: "ON"
+
+proximity:
+  jeremy_home:
+    # zone: home
+    devices:
+      - device_tracker.jeremys_iphone_ios
+    tolerance: 50
+    unit_of_measurement: km
+  lisa_home:
+    # zone: home
+    devices:
+      - device_tracker.iphone_lisa
+    tolerance: 50
+    unit_of_measurement: km
+
+media_extractor:
+
+media_player:
+  - platform: cast
+    host: chromecast
+    name: Living Room
+  - platform: cast
+    host: chromecast-ultra
+    name: Basement
+  - platform: cast
+    host: GOOGLE-HOME
+    name: kitchen_speaker
+  - platform: plex
+
+light:
+  - platform: hue
+    host: 192.168.1.3
+
+# Example configuration.yaml entry
+google_assistant:
+  project_id: !secret google_assistant_project_id
+  client_id: !secret google_assistant_client_id
+  access_token: !secret google_assistant_access_token
+  # agent_user_id: [a string to identify user]
+  # api_key: [a Homegraph API Key generated for the Google Actions project]
+  # expose_by_default:
+  exposed_domains:
+    - switch
+    - light
+    - group
+  # entity_config:
+  #   switch.kitchen:
+  #     name: HASS Google Assistant
+  #     aliases:
+  #       - bright lights
+  #       - entry lights
+  #   light.living_room:
+  #     expose: false
+  #     room: living room

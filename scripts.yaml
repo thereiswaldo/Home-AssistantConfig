@@ -1,0 +1,210 @@
+message_temperature:
+  sequence:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: Current temperature is {{ states.sensor.pws_feelslike_c.state }}
+        data:
+          push:
+            badge: 9
+
+jeremy_location:
+  alias: Jeremy Location
+  sequence:
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data_template:
+        # message: Jeremy is at {{ states.device_tracker.jeremys_iphone_ios.state }}
+        message: >
+          {% if is_state('device_tracker.jeremys_iphone_ios', 'not_home') %}
+            Jeremy is a {{ states.sensor.jeremy_to_home.state }} minute drive from home,
+          {% else %}
+            {% if is_state('device_tracker.jeremys_iphone_ios', 'home') %}
+              Jeremy is at home.
+            {% else %}
+              Jeremy is at {{ states.device_tracker.jeremys_iphone_ios.state }}. A {{ states.sensor.jeremy_to_home.state }} minute drive from home,
+            {% endif %}
+          {% endif %}
+          {% if is_state('input_boolean.running', 'on') %}
+            and he has been out running for {{ states.sensor.started_running.state }} hours.
+          {% endif %}
+
+lisa_location:
+  alias: Lisa Location
+  sequence:
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data_template:
+        # message: Lisa is at {{ states.device_tracker.iphone_lisa.state }}
+        message: >
+          {% if is_state('device_tracker.iphone_lisa', 'not_home') %}
+            Lisa is not in a zone. She is a {{ states.sensor.lisa_to_home.state }} minute drive from home.
+          {% else %}
+            {% if is_state('device_tracker.iphone_lisa', 'home') %}
+              Lisa is at home. Duh.
+            {% else %}
+              Lisa is at {{ states.device_tracker.iphone_lisa.state }}. A {{ states.sensor.lisa_to_home.state }} minute drive from home.
+            {% endif %}
+          {% endif %}
+
+group_visibility:
+  sequence:
+    - service: group.set_visibility
+      data_template:
+        entity_id: '{{ entity_id }}'
+        visible: '{{ is_state(cond, visible_state) }}'
+
+# turn off all christmas stuff (want to be able to turn off tv too)
+grinch:
+  sequence:
+    - service: media_player.turn_off
+      data:
+        entity_id: media_player.basement_tv
+    - service: media_player.turn_off
+      data:
+        entity_id: media_player.living_room
+    - service: media_player.turn_off
+      data:
+        entity_id: media_player.kitchen_speaker
+    - service: script.turn_off
+      data:
+        entity_id: group.lightshow_scripts
+    - service: light.turn_off
+      data:
+        entity_id: group.all_lights
+
+christmas:
+  sequence:
+    - service: media_player.turn_on
+      data:
+        entity_id: media_player.kitchen_speaker
+    - service: media_player.turn_on
+      data:
+        entity_id: media_player.basement_tv
+    - service: media_player.turn_on
+      data:
+        entity_id: media_player.living_room
+    - service: media_extractor.play_media
+      data:
+        entity_id: media_player.kitchen_speaker
+        # media_content_id: https://www.youtube.com/watch?v=yXQViqx6GMY&list=RDQMlFf1539tl-o #all i want for christmas
+        media_content_id: https://www.youtube.com/watch?v=yXQViqx6GMY
+        # media_content_id: https://youtu.be/pQwdCyR9rpE?t=7
+        media_content_type: audio/youtube
+    - service: media_extractor.play_media
+      data:
+        entity_id: media_player.basement_tv
+        media_content_id: https://www.youtube.com/watch?v=Ye2gMvRa-iE
+        media_content_type: video/youtube
+    - service: media_extractor.play_media
+      data:
+        entity_id: media_player.living_room
+        media_content_id: https://www.youtube.com/watch?v=RDfjXj5EGqI
+        media_content_type: video/youtube
+    - service: script.turn_on
+      entity_id:
+        - script.lightshow1
+    - delay:
+        seconds: 30
+    - service: media_player.volume_mute
+      data:
+        entity_id: media_player.living_room
+        is_volume_muted: true
+
+lightshow1:
+  sequence:
+    - alias: Living Room Red
+      service: light.turn_on
+      data:
+        entity_id: light.living_room
+        color_name : red
+        brightness_pct : 100
+    - alias: Basement Green
+      service: light.turn_on
+      data:
+        entity_id: light.basement
+        color_name : green
+        brightness_pct : 100
+    - alias: Lisa Green
+      service: light.turn_on
+      data:
+        entity_id: light.lisa
+        color_name : green
+        brightness_pct : 100
+    - delay:
+        seconds: 1
+    - alias: Loop
+      service: script.turn_on
+      data:
+        entity_id: script.lightshow2
+
+lightshow2:
+  sequence:
+    - alias: Living Room Green
+      service: light.turn_on
+      data:
+        entity_id: light.living_room
+        color_name : green
+        brightness_pct : 100
+    - alias: Basement Red
+      service: light.turn_on
+      data:
+        entity_id: light.basement
+        color_name : red
+        brightness_pct : 100
+    - alias: Lisa Red
+      service: light.turn_on
+      data:
+        entity_id: light.lisa
+        color_name : red
+        brightness_pct : 100
+    - delay:
+        seconds: 1
+    - alias: Loop
+      service: script.turn_on
+      data:
+        entity_id: script.lightshow1
+
+goodnight:
+  sequence:
+    - service: media_player.turn_on
+      data:
+        entity_id: media_player.kitchen_speaker
+    - service: media_extractor.play_media
+      data:
+        entity_id: media_player.kitchen_speaker
+        media_content_type: audio/youtube
+      data_template:
+        # entity_id: media_player.kitchen_speaker
+        # media_content_id: https://youtu.be/pQwdCyR9rpE?t=7
+        media_content_id: >
+            {{ ["https://youtu.be/pQwdCyR9rpE?t=7", "https://www.youtube.com/watch?v=cgqOSCgc8xc", "https://www.youtube.com/watch?v=zSdYgUtvens", "https://www.youtube.com/watch?v=Y5J6_sXKvFo"] | random}}
+    - service: light.turn_off
+      data:
+        entity_id: light.living_room
+        transition: 10
+    - service: light.turn_off
+      data:
+        entity_id: light.basement
+        transition: 5
+    - service: light.turn_on
+      data:
+        entity_id: light.lisa
+        brightness_pct : 100
+        kelvin: 2700
+    -  service: lock.lock
+       entity_id:
+          - lock.locked
+    -  service: homeassistant.turn_off
+       entity_id: switch.switch
+
+runningstart:
+  sequence:
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.running
+
+runningstop:
+  sequence:
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.running

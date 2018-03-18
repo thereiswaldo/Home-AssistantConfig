@@ -1,0 +1,487 @@
+- alias: 'Check when Jeremy leaves work'
+  trigger:
+    platform: zone
+    entity_id: device_tracker.jeremys_iphone_ios
+    zone: !secret jeremys_work
+    event: leave
+  condition:
+    condition: time
+    after: '12:10:00'
+  action:
+    - service: notify.ios_family
+      data:
+        message: Jeremy is on his way home, he will arrive in {{ states.sensor.jeremy_to_home.state }} minutes
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data_template:
+        message: Jeremy is on his way home, he will arrive in {{ states.sensor.jeremy_to_home.state }} minutes
+- alias: 'Check when Lisa leaves work'
+  trigger:
+    platform: zone
+    entity_id: device_tracker.iphone_lisa
+    zone: !secret lisas_work
+    event: leave
+  action:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: Lisa is on her way home, she will arrive in {{ states.sensor.lisa_to_home.state }} minutes
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data_template:
+        message: Lisa is on her way home, she will arrive in {{ states.sensor.lisa_to_home.state }} minutes
+- alias: Welcome Home Jeremy app # working
+  trigger:
+    - platform: zone
+      entity_id: group.phone_tracker_jeremy
+      zone: zone.Home
+      event: enter
+    - platform: zone
+      entity_id: device_tracker.jeremys_iphone_ios
+      zone: zone.Home
+      event: enter
+  action:
+    - delay: '00:00:45'
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data:
+        message: 'Welcome Home Jeremy'
+- alias: Welcome Home Lisa #works!
+  trigger:
+    - platform: zone
+      entity_id: group.phone_tracker_lisa
+      zone: zone.Home
+      event: enter
+    - platform: zone
+      entity_id: device_tracker.iphone_lisa
+      zone: zone.Home
+      event: enter
+  action:
+    - delay: '00:00:20'
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data:
+        message: 'Welcome Home Lisa'
+- alias: Welcome Home Tom #not working!
+  trigger:
+    platform: zone
+    entity_id: device_tracker.THOMASSIPHONE2
+    zone: zone.Home
+    event: enter
+  action:
+    - delay: '00:00:20'
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data:
+        message: 'Welcome Back Tom'
+- alias: Welcome Home Gloria #not working!
+  trigger:
+    platform: zone
+    entity_id: device_tracker.gloriasiphone
+    zone: zone.Home
+    event: enter
+  action:
+    - delay: '00:00:20'
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data:
+        message: 'Welcome Back Gloria'
+- alias: Turn the volume down GH
+  trigger:
+    platform: time
+    at: '22:00:00'
+  action:
+    service: media_player.volume_set
+    data:
+      entity_id: media_player.kitchen_speaker
+      volume_level: 0.3
+- alias: Turn the volume up GH
+  trigger:
+    platform: time
+    at: '08:00:00'
+  action:
+    service: media_player.volume_set
+    data:
+      entity_id: media_player.kitchen_speaker
+      volume_level: 0.5
+- alias: Bun Alert
+  trigger:
+    platform: state
+    entity_id: input_boolean.notify_bun
+    to: 'on'
+  action:
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data:
+        message: 'Bun Alert'
+    - service: notify.ios_family
+      data:
+        message: "Bun Alert!"
+        # data:
+        #   push:
+        #     badge: 5
+    # - service: notify.ios_jeremys_iphone_ios
+    #   data:
+    #     message: "Bun Alert 2!"
+    #     data:
+    #       push:
+    #         badge: 5
+    - service: input_boolean.turn_off #turns the switch back to off so it's ready for next bun alert
+      data:
+        entity_id: input_boolean.notify_bun
+- alias: Notify iOS app
+  trigger:
+    - platform: zone
+      entity_id: group.phone_tracker_jeremy
+      zone: zone.Home
+      event: enter
+    - platform: state
+      entity_id: group.phone_tracker_jeremy
+      from: 'not_home'
+      to: 'home'
+    # - platform: zone #wasn't working with the group sometimes, so trying with this that works for "one home"
+    #   entity_id: device_tracker.jeremys_iphone_ios
+    #   from: 'not_home'
+    #   to: 'home'
+  condition:
+    condition: state
+    entity_id: lock.locked #group.phones isn't working as well as other group was working
+    state: locked
+  action:
+    service: notify.ios_jeremys_iphone_ios
+    data:
+      message: "You're home. Unlock the door?"
+      data:
+        push:
+          # badge: 2
+          category: "unlock" # Needs to match the top level identifier you used in the ios configuration
+        action_data: # Anything passed in action_data will get echoed back to Home Assistant.
+          entity_id: light.test
+          my_custom_data: foo_bar
+- alias: iOS app unlock door
+  trigger:
+    platform: event
+    event_type: ios.notification_action_fired
+    event_data:
+      actionName: UNLOCK_FRONT
+  action:
+   service: lock.unlock
+   entity_id:
+      # - lock.schlage_be469nxcen_touchscreen_deadbolt_locked
+      - lock.locked
+# - alias: iOS app unlock door test
+#   trigger:
+#     platform: event
+#     event_type: ios.notification_action_fired
+#     event_data:
+#       actionName: UNLOCK_FRONT
+#   action:
+#    service: lock.unlock
+#    entity_id:
+#       - lock.schlage_be469nxcen_touchscreen_deadbolt_locked
+- alias: 'Garbage Day Reminder' #testing garbage day reminder
+  trigger:
+    platform: time
+    at: '06:30:00'
+  condition:
+    - condition: time
+      weekday:
+        - wed
+    - condition: state
+      entity_id: input_boolean.holiday_monday
+      state: 'on'
+  action:
+    # - service: notify.ios_jeremys_iphone_ios
+    #   data:
+    #     message: "It's garbage day, take out the trash"
+    #       data:
+    #         push:
+    #           badge: 6
+    - service: tts.google_say
+      entity_id: media_player.kitchen_speaker
+      data:
+        message: 'Garbage Day'
+- alias: 'Check if Monday is a holiday' #testing garbage day reminder
+  trigger:
+    # platform: time
+    # weekday:
+    #   - mon
+    platform: time
+    at: '06:00:00'
+  condition:
+    - condition: time
+      weekday:
+        - mon
+    - condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: 'off'
+  action:
+    service: input_boolean.turn_on #turns the switch back to off so it's ready for next bun alert
+    data:
+      entity_id: input_boolean.holiday_monday
+# - alias: 'What to wear automation' #testing garbage day reminder
+#   trigger:
+#     # platform: time
+#     # weekday:
+#     #   - mon
+#     platform: time
+#     at: '06:00:00'
+#   action:
+#     service: script.turn_on
+#     data_template:
+#       entity_id: >-
+#         {% if relative_time(states.group.bedroom_lights.last_changed) > "5 Minutes" %}
+#         script.bedroom_timed_lamp
+#         {% else %}
+#         script.bedroom_timed_lamp_restore
+#         {% endif %}
+
+### Thermostat Automations ###
+
+# Away mode on for thermostats
+- alias: Set Thermostats To Away Mode 1
+  trigger:
+    - platform: state
+      entity_id: group.phones
+      from: 'home'
+      to: 'not_home'
+  condition:
+    condition: state
+    entity_id: group.phones #group.phones isn't working as well as other group was working
+    state: not_home
+    # optional: trigger only if state was this for last X time.
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  action:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: All away 1
+        # data:
+        #   push:
+        #     badge: 5
+    - service: climate.set_away_mode
+      data:
+        entity_id: climate.main_floor
+        away_mode: 'on'
+# Away mode on for thermostats test 2
+- alias: Set Thermostats To Away Mode 2
+  trigger:
+    platform: state
+    entity_id: group.all_devices
+    to: 'not_home'
+  action:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: All away 2
+        # data:
+        #   push:
+        #     badge: 5
+    - service: climate.set_away_mode
+      data:
+        entity_id: climate.main_floor
+        away_mode: 'on'
+
+# Away mode off for thermostats
+- alias: Set Thermostats To Home Mode
+  trigger:
+    - platform: state
+      entity_id: group.phones
+      from: 'not_home'
+      to: 'home'
+  action:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: One home
+    - service: climate.set_away_mode
+      data:
+        entity_id: climate.main_floor
+        away_mode: 'off'
+# Removing holds on ecobee at night by temporarily setting away mode. could try in one automation with two actions?
+- alias: Turn off ecobee holds at night pt 1
+  trigger:
+    platform: time
+    at: "22:07:00"
+  action:
+    - service: climate.set_away_mode
+      data:
+        entity_id: climate.main_floor
+        away_mode: 'on'
+- alias: Turn off ecobee holds at night pt 2
+  trigger:
+    platform: time
+    at: "22:08:00"
+  action:
+    - service: climate.set_away_mode
+      data:
+        entity_id: climate.main_floor
+        away_mode: 'off'
+
+- alias: Start Lightshow
+  trigger:
+    platform: state
+    entity_id: input_boolean.lightshow
+    to: 'on'
+  action:
+    - service: script.turn_on
+      data:
+        entity_id: script.lightshow1
+    - service: script.turn_on
+      data:
+        entity_id: script.yulelog
+- alias: Stop Lightshow
+  trigger:
+    platform: state
+    entity_id: input_boolean.lightshow
+    to: 'off'
+  action:
+    - service: script.turn_off
+      data:
+        entity_id: group.lightshow_scripts
+    - service: light.turn_off
+      data:
+        entity_id: group.all_lights
+
+- alias: Bun Alert
+  trigger:
+    platform: state
+    entity_id: input_boolean.eco_away
+    to: 'on'
+  action:
+    - service: climate.set_away_mode
+      data:
+        entity_id: climate.main_floor
+        away_mode: 'on'
+- alias: Home View Jeremy
+  trigger:
+    - platform: state
+      entity_id: group.phone_tracker_jeremy
+      from: 'not_home'
+      to: 'home'
+  action:
+    - service: group.set_visibility
+      entity_id: group.phone_tracker_jeremy
+      data:
+        visible: false
+    - service: group.set_visibility
+      entity_id: group.position_jeremy
+      data:
+        visible: false
+    - service: group.set_visibility
+      entity_id: group.phone_tracker_jeremy
+      data:
+        visible: false
+- alias: Home View Lisa
+  trigger:
+    - platform: state
+      entity_id: group.phone_tracker_lisa
+      from: 'not_home'
+      to: 'home'
+  action:
+    - service: group.set_visibility
+      entity_id: group.phone_tracker_lisa
+      data:
+        visible: False
+    - service: group.set_visibility
+      entity_id: group.position_lisa
+      data:
+        visible: false
+    - service: group.set_visibility
+      entity_id: group.phone_tracker_lisa
+      data:
+        visible: false
+- alias: Home View All Home
+  trigger:
+    - platform: state
+      entity_id: group.phones
+      from: 'not_home'
+      to: 'home'
+  action:
+    - service: group.set_visibility
+      entity_id: group.travel_times
+      data:
+        visible: False
+- alias: Check if Jeremy unlocked door
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level
+    above: 2
+    below: 4
+  action:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: Jeremy unlocked
+- alias: Check if Lisa unlocked door
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level
+    above: 3
+  action:
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: Lisa unlocked
+- alias: Rainy Day #turn on the light if it is or is going to rain today
+  trigger:
+    - platform: time
+      at: '6:45'
+  condition:
+    - condition: state
+      entity_id: group.phones
+      state: 'home'
+    - condition: numeric_state
+      entity_id: sensor.dark_sky_daily_max_precip_intensity
+      above: 0.4
+  action:
+    service: light.turn_on
+    data:
+      entity_id: light.living_room
+      color_name : blue
+      brightness_pct : 100
+- alias: Turn off rain day light #turn off rain day light
+  trigger:
+    - platform: time
+      at: '9:00'
+  action:
+    service: light.turn_off
+    data:
+      entity_id: light.living_room
+      kelvin: 2700 #trying to turn the colour back to something similar to lisa's relax
+
+- alias: Welcome Home Lisa Light
+  trigger:
+    - platform: zone
+      entity_id: group.phone_tracker_lisa
+      zone: zone.Home
+      event: enter
+    - platform: zone
+      entity_id: device_tracker.iphone_lisa
+      zone: zone.Home
+      event: enter
+  condition:
+    - condition: numeric_state
+      entity_id: sun.sun
+      value_template: '{{ state.attributes.elevation }}'
+      below: -2.5
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.living_room
+        brightness_pct : 100
+    - service: notify.ios_jeremys_iphone_ios
+      data:
+        message: Lisa home light on
+# Turn on light when door unlocked at night
+- alias: 'Turn on entry light'
+  trigger:
+    - platform: state
+      entity_id: lock.locked
+      from: "locked"
+      to: "unlocked"
+  condition:
+    - condition: numeric_state
+      entity_id: sun.sun
+      value_template: '{{ state.attributes.elevation }}'
+      below: -2.5
+  action:
+    service: homeassistant.turn_on
+    entity_id: group.living_room_lights

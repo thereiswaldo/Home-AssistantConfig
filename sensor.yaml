@@ -1,0 +1,267 @@
+
+- platform: yr
+- platform: wunderground
+  api_key: !secret wunderground_api_key
+  monitored_conditions:
+    - alerts
+    - dewpoint_c
+    - feelslike_c
+    - heat_index_c
+    - elevation
+    - location # delete
+    - observation_time
+    - precip_1hr_metric
+    - precip_1hr_string # delete
+    - precip_today_metric
+    - precip_today_string # delete
+    - pressure_mb
+    - pressure_trend
+    - relative_humidity
+    - station_id # delete
+    - solarradiation
+    - temp_c
+    - UV
+    - visibility_km
+    - weather
+    - wind_dir
+    - wind_gust_kph
+    - wind_kph
+- platform: google_travel_time
+  name: Jeremy To Home
+  api_key: secret! google_travel_api_key
+  # origin: device_tracker.jeremysiphone2
+  # origin: device_tracker.jeremymqtt_jeremymqtt
+  # origin: device_tracker.jeremys_iphone
+  origin: device_tracker.jeremys_iphone_ios
+  destination: zone.home
+- platform: google_travel_time
+  name: Lisa To Home
+  api_key: secret! google_travel_api_key
+  origin: device_tracker.iphone_lisa
+  destination: zone.home
+- platform: google_travel_time
+  name: Home to Work
+  api_key: secret! google_travel_api_key
+  origin: zone.home
+  destination: secret! jeremys_work
+# - platform: command_line #command line doesn't work in hassio
+#   name: running_top1
+#   command: 'sh /config/Databases/running_clothes.sh Top1 10' #"/hassio/config/Databases/running_clothes.sh Top1 10"
+  # command: "/Users/jeremywalsh/Documents/HASS/Databases/running_clothes.sh Top1 {{ states.sensor.pws_feelslike_c.state }}"
+# - platform: command_line
+#   name: running_bottom1
+#   command: "/Users/jeremywalsh/.homeassistant/Databases/running_clothes.sh Bottom1 10"
+# - platform: command_line
+#   name: running_top2
+#   command: "/Users/jeremywalsh/.homeassistant/Databases/running_clothes.sh Top2 10"
+  # command: "sqlite3 Running_clothes.db  'select Top1 from Running_Clothes where Temperature=30'"
+- platform: template
+  sensors:
+    frontdoorbattery:
+      # entity_id: zwave.front_door_lock_2
+      # entity_id: zwave.schlage_be469nxcen_touchscreen_deadbolt
+      entity_id: zwave.schlage_be469_touchscreen_deadbolt
+      # value_template: "{{ states.zwave.schlage_be469nxcen_touchscreen_deadbolt.attributes.battery_level }}"
+      value_template: "{{ states.zwave.schlage_be469_touchscreen_deadbolt.attributes.battery_level }}"
+      friendly_name: 'Front Door Lock Battery'
+      unit_of_measurement: '%'
+    # this sensor is intended to capture the user number that was used during
+    # the last operation that required a code to be entered.  it will persist
+    # after subsequent other events (manual locking, etc.) that didn't involve
+    # a user code
+    # front_door_code:
+    #   friendly_name: Front Door Last Code
+    #   entity_id:
+    #     - sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type
+    #     - sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level
+    #   value_template: >-
+    #     {% if is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type', '18') or
+    #           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type', '19') %}
+    #       {% if not is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level', '0') %}
+    #         {{states('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level')}}
+    #       {% else %}
+    #         {# just provide previous value if no user code entered #}
+    #         {{states('sensor.front_door_code')}}
+    #       {% endif %}
+    #     {% else %}
+    #       {# just provide previous value if no user code entered #}
+    #       {{states('sensor.front_door_code')}}
+    #     {% endif %}
+# - platform: template # not working
+#   sensors:
+#     front_door_code:
+#       friendly_name: 'Front Door Code'
+#       value_template: >
+#                         {% if is_state_attr("lock.schlage_be469nxcen_touchscreen_deadbolt_locked", "lock_status", "Unlocked with Keypad by user 1") %}
+#                           U1
+#                         {% elif is_state_attr("lock.schlage_be469nxcen_touchscreen_deadbolt_locked", "lock_status", "Unlocked with Keypad by user 2") %}
+#                           U2
+#                         {% elif is_state_attr("lock.schlage_be469nxcen_touchscreen_deadbolt_locked", "lock_status", "Locked with Keypad by user 1") %}
+#                           L1
+#                         {% elif is_state_attr("lock.schlage_be469nxcen_touchscreen_deadbolt_locked", "lock_status", "Locked with Keypad by user 2") %}
+#                           L2
+#                         {% endif %}
+
+# - platform: template
+#   sensors:
+#     front_lock_last_action:
+#       friendly_name: 'Last Action'
+#       value_template: >
+#                         {% if
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level_5_1', '1')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control_5_9', '6')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type_5_0', '19') %}
+#                                 Unlocked: User Code 1
+#                         {% endif %}
+#
+#                         {% if
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level_5_1', '2')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control_5_9', '6')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type_5_0', '19') %}
+#                                 Unlocked: User Code 2
+#                         {% endif %}
+#
+#                         {% if
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level_5_1', '1')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control_5_9', '2')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type_5_0', '22') %}
+#                                 Unlocked: Inside Deadbolt
+#                         {% endif %}
+#
+#                         {% if
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level_5_1', '1')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control_5_9', '1')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type_5_0', '21') %}
+#                                 Locked: Inside Deadbolt
+#                         {% endif %}
+#
+#                         {% if
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level_5_1', '0')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control_5_9', '5')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type_5_0', '18') %}
+#                                 Locked: Outside Keypad
+#                         {% endif %}
+# - platform: template
+#   sensors:
+#     what_to_wear:
+#       friendly_name: 'What to wear running'
+#       value_template: >
+#                         {% if
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level_5_1', '1')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control_5_9', '6')
+#                         and
+#                           is_state('sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type_5_0', '19') %}
+#                                 Unlocked: User Code 1
+#                         {% endif %}
+- platform: template
+  sensors:
+    what_to_wear:
+      friendly_name: "What to wear sensor"
+      value_template: >-
+        {% if states("sensor.pws_feelslike_c") | float > 20 and states("pws_feelslike_c") | float < 30 %}
+          OK
+        {%elif states("sensor.pws_feelslike_c") | float < 20 %}
+          Too Cold
+        {%elif states("sensor.pws_feelslike_c") | float > 30 %}
+          Too Hot
+        {%elif states("sensor.pws_feelslike_c") | float < 1 %}
+          ERROR
+        {%- endif %}
+      #  {% if is_state('sensor.pws_weather', 'Overcast') %}
+      #    overcast
+      #  {% else %}
+      #    down
+      #  {% endif %}
+#        {% if states('sensor.pws_feelslike_c') | float > 20 %}
+#          It is warm!
+#        {%-elif states('sensor.pws_feelslike_c.state') | float > 10 %}
+#          It is medium
+#        {%-elif states('sensor.pws_feelslike_c.state') | float > 5 %}
+#          It is cool
+#        {%-elif states('sensor.pws_feelslike_c.state') | float > -5 %}
+#          It is chilly
+#        {%-elif states('sensor.pws_feelslike_c.state') | float > -20 %}
+#          It is cold
+#        {% else %}
+#          It is freezing!
+#        {%endif %}
+- platform: fitbit
+  clock_format: 12H
+  monitored_resources:
+    - "activities/steps"
+- platform: darksky
+  api_key: !secret darksky_api_key
+  latitude: !secret latitude
+  longitude: !secret longitude
+  monitored_conditions:
+    - summary
+    - precip_intensity
+    - precip_probability
+    # - daily_max_precip_intensity
+    - precip_intensity_max
+    - daily_summary
+    - icon
+    - nearest_storm_distance
+    - precip_type
+- platform: history_stats
+  name: Started running
+  entity_id: input_boolean.running
+  state: 'on'
+  type: time
+  start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  duration:
+      hours: 24
+- platform: teksavvy
+  api_key: !secret teksavvy_api_key
+  total_bandwidth: 200
+  monitored_variables:
+    - usage
+    - usage_gb
+    - limit
+    - onpeak_download
+    - onpeak_upload
+    - onpeak_total
+    - offpeak_download
+    - offpeak_upload
+    - offpeak_total
+    - onpeak_remaining
+# - platform: rest
+#   name: strava_elev_high
+#   resource:  https://www.strava.com/api/v3/activities
+#   method: GET
+#   headers:
+#     Authorization:	!secret strava_api_key
+#   value_template: '{{ value_json[0].elev_high | multiply(3.280839895) | round(1) }}'
+#   unit_of_measurement: ft
+#   scan_interval: 300
+- platform: rest
+  name: strava__last_ride_total_elevation_gain
+  # resource:  https://www.strava.com/api/v3/activities?access_token=&per_page=200
+  resource:  https://www.strava.com/api/v3/activities
+  method: GET
+  headers:
+    Authorization: !secret strava_api_key
+  value_template: '{{ value_json[0].total_elevation_gain | multiply(3.280839895) | round(1)  }}'
+  unit_of_measurement: ft
+  scan_interval: 300
+- platform: rest
+  name: strava_distance
+  # resource:  https://www.strava.com/api/v3/activities?access_token=&per_page=200
+  resource:  https://www.strava.com/api/v3/activities
+  method: GET
+  headers:
+    Authorization: !secret strava_api_key
+  value_template: '{{ value_json[0].distance | multiply(1) | round(1)  }}'
+  unit_of_measurement: m
+  scan_interval: 300

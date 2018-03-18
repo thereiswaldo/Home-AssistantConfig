@@ -1,0 +1,32 @@
+group.all_automations:
+  hidden: false
+group.all_scripts:
+  hidden: false
+group.weather:
+  hidden: false
+group.frontdoor:
+  hidden: false
+group.zwave:
+  hidden: false
+group.phone_tracker_lisa:
+  hidden: false
+group.phone_tracker_jeremy:
+  hidden: false
+group.travel_times:
+  hidden: false
+group.climate:
+  hidden: false
+group.all_locks:
+  hidden: false
+group.all_switches:
+  hidden: false
+group.all_devices:
+  hidden: false
+group.all_lights:
+  hidden: false
+lock.schlage_be469_touchscreen_deadbolt_locked:
+  friendly_name: Front Door
+sensor.teksavvy_remaining:
+  friendly_name: Bandwidth Remaining
+switch.switch:
+  friendly_name: Entry Light

@@ -1,0 +1,265 @@
+####################################################
+#                                                  #
+#                     VIEWS                        #
+#                                                  #
+####################################################
+phone_tracker_view:
+  view: yes
+  name: Location
+  entities:
+    - group.phone_tracker_lisa
+    - group.phone_tracker_jeremy
+    - group.travel_times
+    - group.mobiledevices
+    - group.all_devices
+    - camera.Jeremy_Position
+    - camera.Lisa_Position
+weather_view:
+  view: yes
+  name: Weather
+  entities:
+    - group.weather
+    - group.whatwear
+media_view:
+  view: yes
+  name: Media
+  entities:
+    - group.media
+frontdoor_view:
+  view: yes
+  name: Front Door
+  entities:
+    - group.frontdoor
+climate_view:
+  view: yes
+  name: Climate
+  entities:
+    - group.climate
+    - climate.main_floor
+debug_view:
+  view: yes
+  name: Debug
+  entities:
+    - group.phone_tracker_lisa
+    - group.phone_tracker_jeremy
+    - group.all_automations
+    - group.all_scripts
+    - group.zwave
+    - group.all_devices
+    - group.all_lights
+    - group.all_switches
+    - group.all_locks
+    - group.climate
+    - sensor.steps
+    - group.booleans
+default_view:
+  view: yes
+  icon: mdi:home
+  entities:
+    - lock.locked
+    # - group.front_page
+    # - group.phone_tracker_lisa
+    - device_tracker.iphone_lisa
+    # - group.phone_tracker_jeremy
+    - device_tracker.jeremys_iphone_ios
+    # - group.travel_times
+    - sensor.home_to_work
+    - sensor.jeremy_to_home
+    - sensor.lisa_to_home
+    - climate.main_floor
+    # - proximity.home
+    # - group.all_switches
+    # - input_boolean.notify_bun
+    # - device_tracker.iphone_lisa
+    # - group.position_jeremy
+    - camera.Jeremy_Position
+    # - group.position_lisa
+    - camera.Lisa_Position
+    - sensor.pws_feelslike_c
+    - sensor.pws_weather
+    # - group.all_lights
+    - light.basement
+    - light.living_room
+    - light.lisa
+    - switch.switch
+    - input_boolean.notify_bun
+    - input_boolean.running
+    - proximity.jeremy_home
+    - proximity.lisa_home
+    - sensor.teksavvy_remaining
+    # - group.internet_data
+    # if it's going to rain then show precipitation type and amount, link to weather tab or weather network
+    #if on way home show proximity
+    # if not home show camera position
+
+####################################################
+#                                                  #
+#                    GROUPS                        #
+#                                                  #
+####################################################
+media:
+  name: Media
+  entities:
+    # - media_player.plex
+    - media_player.living_room
+    # - media_player.itunes
+    - media_player.kitchen_speaker
+    - media_player.basement_tv
+    - media_player.plex_web_chrome
+    - media_player.jeremys_iphone
+# clothes:
+#   name: What To Wear Running
+#   entities:
+#     - sensor.running_top1
+#     - sensor.running_top2 # if empty, hide
+#     - sensor.running_bottom1
+phone_tracker_lisa:
+  name: Location
+  entities:
+    - device_tracker.iphone_2
+    - device_tracker.iphone_lisa
+    # - camera.Lisa_Position
+phone_tracker_jeremy:
+  name: Location
+  entities:
+    - device_tracker.jeremys_iphone_ios
+    - device_tracker.jeremysiphone2
+    - device_tracker.jeremy_owntrack
+    # - device_tracker.jwipad_jwipad
+    # - device_tracker.jeremys_ipad
+    # - camera.Jeremy_Position
+travel_times:
+  name: Travel
+  entities:
+    - sensor.home_to_work
+    - sensor.jeremy_to_home
+    - sensor.lisa_to_home
+weather:
+  name: Waterdown weather
+  entities:
+    - sensor.pws_temp_c
+    - sensor.pws_wind_kph
+    - sensor.pws_alerts
+    - sensor.pws_dewpoint_c
+    - sensor.pws_elevation
+    - sensor.pws_feelslike_c
+    - sensor.pws_heat_index_c
+    - sensor.pws_precip_1hr_metric
+    - sensor.pws_precip_today_metric
+    - sensor.pws_pressure_mb
+    - sensor.pws_pressure_trend
+    - sensor.pws_relative_humidity
+    - sensor.pws_solarradiation
+    - sensor.pws_temp_c
+    - sensor.pws_uv
+    - sensor.pws_visibility_km
+    - sensor.pws_weather
+    - sensor.pws_wind_dir
+    - sensor.pws_wind_gust_kph
+    - sensor.pws_wind_kph
+    - sun.sun #delete the rest of this group
+    - sensor.pws_location
+    - sensor.pws_precip_1hr_string
+    - sensor.pws_precip_today_string
+    - sensor.pws_station_id
+    - sensor.yr_symbol
+    - sensor.pws_observation_time
+
+frontdoor:
+  name: Front Door
+  entities:
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_access_control
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_level
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_alarm_type
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_burglar
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_power_management
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_sourcenodeid
+    # - sensor.schlage_be469nxcen_touchscreen_deadbolt_system
+    - sensor.frontdoorbattery
+    # - lock.schlage_be469nxcen_touchscreen_deadbolt_locked
+    - sensor.schlage_be469_touchscreen_deadbolt_access_control
+    - sensor.schlage_be469_touchscreen_deadbolt_alarm_level
+    - sensor.schlage_be469_touchscreen_deadbolt_alarm_type
+    - sensor.schlage_be469_touchscreen_deadbolt_burglar
+    - sensor.schlage_be469_touchscreen_deadbolt_power_management
+    - sensor.schlage_be469_touchscreen_deadbolt_sourcenodeid
+    - sensor.schlage_be469_touchscreen_deadbolt_system
+    - lock.schlage_be469_touchscreen_deadbolt_locked
+    - lock.locked
+
+whatwear:
+  name: What to Wear
+  entities:
+    - sensor.running_top1
+
+mobiledevices:
+  name: Mobile devices
+  entities:
+    - sensor.jeremys_ipad_battery_level
+    - sensor.jeremys_ipad_battery_state
+    - sensor.jeremys_iphone_battery_level
+    - sensor.jeremys_iphone_battery_state
+    - sensor.iphone_battery_level
+    - sensor.iphone_battery_level_2
+    - sensor.iphone_battery_state
+    - sensor.iphone_battery_state_2
+
+climate:
+  name: Climate
+  entities:
+    - sensor.main_floor_humidity
+    - sensor.main_floor_temperature
+    - binary_sensor.main_floor_occupancy
+    - binary_sensor.basement_occupancy
+    - sensor.basement_temperature
+
+zwave:
+  name: zwave
+  entities:
+    - zwave.schlage_be469nxcen_touchscreen_deadbolt
+    - zwave.aeotec_zw090_zstick_gen5_us
+
+phones:
+  name: Phones
+  entities:
+    - device_tracker.iphone_2
+    - device_tracker.iphone_lisa
+    - device_tracker.jeremys_iphone_ios
+    - device_tracker.jeremysiphone2
+
+positions:
+  name: Phone positions
+  entities:
+    - camera.Jeremy_Position
+    - camera.Lisa_Position
+position_jeremy:
+  name: Jeremy phone position
+  entities:
+    - camera.Jeremy_Position
+position_lisa:
+  name: Lisa phone position
+  entities:
+    - camera.Lisa_Position
+booleans:
+  name: Input Booleans
+  entities:
+    - input_boolean.eco_away
+    - input_boolean.holiday_monday
+    - input_boolean.notify_bun
+    - input_boolean.lightshow
+    - input_boolean.running
+lightshow_scripts:
+  - script.lightshow1
+  - script.lightshow2
+front_page:
+  # - lock.schlage_be469_touchscreen_deadbolt_locked
+  - lock.locked
+  - light.basement
+  - light.living_room
+  - light.lisa
+  - input_boolean.notify_bun
+internet_data:
+  - sensor.teksavvy_remaining
+living_room_lights:
+  - light.living_room
+  - switch.switch
